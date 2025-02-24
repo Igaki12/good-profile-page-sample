@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ホーム画面サンプル</title>
+  <!-- Chart.jsライブラリ（円グラフ用） -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* 基本スタイル */
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      background: #FFF8F0;
+      color: #333;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+      background: #FFDEAD;
+    }
+    /* 短い格言（斜体＋glowアニメーション） */
+    .quote {
+      margin-right: auto;
+      margin-left: auto;
+      font-size: 1.8em;
+      font-weight: bold;
+      font-style: italic;
+      color: white;
+      animation: glow 2s infinite alternate;
+    }
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #FFA07A; }
+      to   { text-shadow: 0 0 25px #FF4500; }
+    }
+    /* ハンバーガーアイコン */
+    .hamburger {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .hamburger div {
+      width: 100%;
+      height: 4px;
+      background-color: #333;
+      border-radius: 2px;
+      transition: background-color 0.3s ease;
+    }
+    .hamburger:hover {
+      transform: scale(1.1);
+    }
+    .hamburger:active {
+      transform: scale(0.9);
+    }
+    /* Notification Banner */
+    .notification-banner {
+      background: #FFE4B5;
+      padding: 10px;
+      text-align: center;
+    }
+    /* Search Bar */
+    .search-bar {
+      text-align: center;
+      margin: 20px;
+    }
+    .search-bar input {
+      width: 200px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .search-bar button {
+      padding: 8px 12px;
+      border: none;
+      background: #FF8C00;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 5px;
+      transition: background 0.3s ease;
+    }
+    .search-bar button:hover {
+      background: #FFA500;
+    }
+    /* アイコンカード群 */
+    .icons-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 40px;
+      gap: 20px;
+    }
+    .icon-card {
+      width: 120px;
+      height: 120px;
+      background-color: #F5DEB3;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .icon-card img {
+      max-height: 100%;
+      max-width: 100%;
+      border-radius: 10px;
+    }
+    .icon-card.loaded {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .icon-card.loaded:hover {
+      transform: translateY(0) scale(1.05);
+    }
+    /* Pulseアニメーション（クリック時） */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    .pulse {
+      animation: pulse 0.5s ease;
+    }
+    /* 詳細パネル（下方向に伸びるアニメーション） */
+    .details-panel {
+      text-align: center;
+      max-height: 0;
+      max-width: 500px;
+      overflow: hidden;
+      transition: max-height 0.6s ease, padding 0.6s ease;
+      background: #FDF5E6;
+      margin: 0 auto;
+      border-radius: 10px;
+      padding: 0 20px;
+    }
+    .details-panel.active {
+      max-height: 200px; /* 調整可能 */
+      padding: 20px;
+    }
+    .details-panel p {
+      margin: 0;
+    }
+    .details-panel button {
+      margin-top: 10px;
+      padding: 5px 10px;
+      border: none;
+      background: #FF8C00;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .details-panel button:hover {
+      background: #FFA500;
+    }
+    /* プロフィールセクション */
+    .profile {
+        max-width: 500px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 40px;
+      background: #FFDEAD;
+      margin: 40px auto;
+      border-radius: 10px;
+    }
+    .profile img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 20px;
+    }
+    .profile-info p {
+      margin: 5px 0;
+    }
+    /* 使用状況・ログセクション */
+    .usage-section {
+      padding: 20px 40px;
+      background: #FDF5E6;
+      margin: 20px 40px 80px;
+      border-radius: 10px;
+    }
+    .usage-section h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .chart-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .usage-section table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .usage-section th, .usage-section td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    /* フッター */
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: #FFDEAD;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <!-- ヘッダー -->
+  <header>
+    <div class="quote">Stay Fit</div>
+    <div class="hamburger" id="hamburger">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+  </header>
+
+  <!-- Notification Banner -->
+  <div class="notification-banner">
+    <!-- <p>Welcome back! Check out the latest updates.</p> -->
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <input type="text" placeholder="Search...">
+    <button>Search</button>
+  </div>
+
+  <!-- メインコンテンツ -->
+  <main>
+    <!-- アイコンカード群 -->
+    <div class="icons-container" id="iconsContainer">
+      <!-- 各カードにdata-detail属性で詳細テキストを設定 -->
+      <div class="icon-card" data-detail="「画像から姿勢推定」の詳細">
+        <img src="{{ url_for('static', filename='icon/icon_camera_368x368.png') }}" alt="image_to_pose">
+      </div>
+      <div class="icon-card" data-detail="「動画から姿勢推定」の詳細">
+        <img src="{{ url_for('static', filename='icon/icon_video_389x389.png') }}" alt="video_to_pose">
+      </div>
+      <div class="icon-card" data-detail="Icon 3の詳細">
+        <img src="https://via.placeholder.com/60" alt="Icon 3">
+      </div>
+    </div>
+
+    <!-- 詳細表示パネル -->
+    <div class="details-panel" id="detailsPanel">
+      <p id="detailsText"></p>
+      <button id="useButton">使ってみる</button>
+    </div>
+
+    <!-- プロフィール表示エリア -->
+    <section class="profile">
+      <img src="{{ url_for('static', filename='icon/profile_sample.png') }}" alt="Profile">
+      <div class="profile-info">
+        <p><strong>名前:</strong> John Doe</p>
+        <p><strong>メール:</strong> john@example.com</p>
+        <p><strong>役職:</strong> Developer</p>
+        <p><strong>最終ログイン日:</strong> 2025-02-22</p>
+        <p><strong>登録日:</strong> 2024-12-01</p>
+      </div>
+    </section>
+
+    <!-- 使用状況・ログセクション -->
+    <section class="usage-section">
+      <h2>Usage Statistics & Logs</h2>
+      <div class="chart-container">
+        <canvas id="usageChart" width="200" height="200"></canvas>
+      </div>
+      <div class="logs">
+        <h3>Detailed Logs</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>App</th>
+              <th>Date</th>
+              <th>Usage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>App A</td>
+              <td>2025-02-21</td>
+              <td>40%</td>
+            </tr>
+            <tr>
+              <td>App B</td>
+              <td>2025-02-21</td>
+              <td>35%</td>
+            </tr>
+            <tr>
+              <td>App C</td>
+              <td>2025-02-21</td>
+              <td>25%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- フッター -->
+  <footer>
+    &copy; 2025 Happyman All Rights Reserved.
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // ページ読み込み時にアイコンを順次表示
+      const icons = document.querySelectorAll('.icon-card');
+      icons.forEach((icon, index) => {
+        setTimeout(() => {
+          icon.classList.add('loaded');
+        }, index * 200);
+      });
+
+      const detailsPanel = document.getElementById('detailsPanel');
+      const detailsText = document.getElementById('detailsText');
+      let activeIcon = null;
+
+      // アイコンクリック時の詳細表示＆pulseアニメーション処理
+      icons.forEach(icon => {
+        icon.addEventListener('click', function() {
+          // Pulseアニメーションの追加
+          this.classList.add('pulse');
+          setTimeout(() => { this.classList.remove('pulse'); }, 500);
+          
+          // 詳細パネルの表示切替
+          if (activeIcon === this) {
+            detailsPanel.classList.remove('active');
+            activeIcon = null;
+          } else {
+            activeIcon = this;
+            detailsText.textContent = this.getAttribute('data-detail');
+            detailsPanel.classList.add('active');
+           // detailsPanel.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      });
+
+      // ハンバーガーアイコンのクリック処理
+      const hamburger = document.getElementById('hamburger');
+      hamburger.addEventListener('click', function() {
+        alert("メニューを開きます");
+      });
+
+      // Chart.jsを使った使用状況円グラフの初期化
+      const ctx = document.getElementById('usageChart').getContext('2d');
+      const usageChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['App A', 'App B', 'App C'],
+          datasets: [{
+            data: [40, 35, 25],
+            backgroundColor: ['#FF8C00', '#FFA500', '#FFDEAD']
+          }]
+        },
+        options: {
+          responsive: false,
+          maintainAspectRatio: false
+        }
+      });
+    });
+  </script>
+</body>
+</html>
